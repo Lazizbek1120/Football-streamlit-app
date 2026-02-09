@@ -8,7 +8,7 @@ st.set_page_config(page_title="Futbol Analiz", layout="wide")
 st.title(" Futbol Player Statistikasi Dashboard")
 
 # CSV faylni o‘qish
-df = pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Homework\Football.csv")
+df = pd.read_csv("Football.csv")
 
 # Sidebar filterlar
 st.sidebar.header("Filter")
@@ -42,4 +42,5 @@ if not filtered_df.empty:
     plt.ylabel("Gollar")
     st.pyplot(plt)
 else:
+
     st.warning("Ma'lumot topilmadi.")
