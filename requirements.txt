@@ -1,3 +1,4 @@
-stramlit
+streamlit
 pandas
-matplotlip
+
+matplotlib
