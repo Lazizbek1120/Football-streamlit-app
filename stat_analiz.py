@@ -3,23 +3,10 @@ import pandas as pd
 import plotly.express as px
 
 st.set_page_config(page_title="Football Stats Analyzer", layout="wide")
+st.title(" Football Stats Analyzer")
 
 # =========================
-# CUSTOM STYLE
-# =========================
-st.markdown("""
-    <style>
-    .main {background-color: #0E1117;}
-    .stMetric {text-align: center;}
-    .stMetric label {font-size:16px;}
-    .stMetric div {font-size:28px;}
-    </style>
-""", unsafe_allow_html=True)
-
-st.title("⚽ Football Stats Analyzer")
-
-# =========================
-# CLEAN COLUMNS
+# COLUMN CLEANER
 # =========================
 def clean_columns(df):
     df.columns = (
@@ -34,8 +21,9 @@ def clean_columns(df):
     )
     return df
 
+
 # =========================
-# SAFE NUMERIC
+# NUMERIC CONVERTER
 # =========================
 def convert_numeric(df):
     for col in df.columns:
@@ -45,16 +33,18 @@ def convert_numeric(df):
             pass
     return df
 
+
 # =========================
-# MERGE PLAYERS
+# PLAYER MERGE
 # =========================
 def merge_players(df, players):
     if "id_player" in df.columns and "id_player" in players.columns:
         df = df.merge(players, on="id_player", how="left")
     return df
 
+
 # =========================
-# MERGE TEAMS (CLEAN FIX)
+# TEAM MERGE (100% FIX)
 # =========================
 def merge_teams(df, teams):
 
@@ -62,20 +52,22 @@ def merge_teams(df, teams):
 
         df = df.merge(teams, on="id_team", how="left")
 
-        # team name ustunini topish
-        team_name_col = None
-        for col in teams.columns:
-            if col != "id_team" and teams[col].dtype == "object":
-                team_name_col = col
-                break
-
-        if team_name_col:
-            df["team"] = df[team_name_col]
+        # team nom ustunini aniqlaymiz
+        if "team_name" in df.columns:
+            df["team"] = df["team_name"]
+        elif "name" in df.columns:
+            df["team"] = df["name"]
+        else:
+            for col in teams.columns:
+                if col != "id_team" and teams[col].dtype == "object":
+                    df["team"] = df[col]
+                    break
 
         # id_team ni o‘chiramiz
         df = df.drop(columns=["id_team"], errors="ignore")
 
     return df
+
 
 # =========================
 # LOAD DATA
@@ -117,33 +109,41 @@ def load_data():
 
 attacking, defending, goalkeeping, goals, disciplinary, players, teams = load_data()
 
+
 # =========================
 # SIDEBAR
 # =========================
 st.sidebar.title("📊 Navigation")
-
-page = st.sidebar.radio(
-    "Go to",
-    ["🏠 Home", "⚽ Top Scorers", "🎯 Playmakers", "🛡 Defenders", "🧤 Goalkeepers", "🟨 Discipline"],
+page = st.sidebar.selectbox(
+    "Select Section",
+    [
+        "Home",
+        "Top Scorers",
+        "Playmakers",
+        "Defenders",
+        "Goalkeepers",
+        "Discipline",
+    ],
 )
 
 # =========================
 # HOME
 # =========================
-if page == "🏠 Home":
+if page == "Home":
 
     col1, col2, col3 = st.columns(3)
 
     total_goals = goals["goals"].sum() if "goals" in goals.columns else 0
 
-    col1.metric("🏟 Total Teams", len(teams))
-    col2.metric("👥 Total Players", len(players))
-    col3.metric("⚽ Total Goals", int(total_goals))
+    col1.metric("Total Teams", len(teams))
+    col2.metric("Total Players", len(players))
+    col3.metric("Total Goals", int(total_goals))
+
 
 # =========================
 # TOP SCORERS
 # =========================
-elif page == "⚽ Top Scorers":
+elif page == "Top Scorers":
 
     if "goals" in goals.columns:
 
@@ -157,15 +157,17 @@ elif page == "⚽ Top Scorers":
             title="Top 10 Goal Scorers",
         )
 
-        fig.update_layout(template="plotly_dark")
-
         st.plotly_chart(fig, use_container_width=True)
-        st.dataframe(top.drop(columns=["id_team"], errors="ignore"))
+        st.dataframe(top[["player_name", "team", "goals"]])
+
+    else:
+        st.warning("Goals column not found.")
+
 
 # =========================
 # PLAYMAKERS
 # =========================
-elif page == "🎯 Playmakers":
+elif page == "Playmakers":
 
     if "assists" in attacking.columns:
 
@@ -179,15 +181,17 @@ elif page == "🎯 Playmakers":
             title="Top Assist Providers",
         )
 
-        fig.update_layout(template="plotly_dark")
-
         st.plotly_chart(fig, use_container_width=True)
-        st.dataframe(top)
+        st.dataframe(top[["player_name", "team", "assists"]])
+
+    else:
+        st.warning("Assists column not found.")
+
 
 # =========================
 # DEFENDERS
 # =========================
-elif page == "🛡 Defenders":
+elif page == "Defenders":
 
     if "tackles" in defending.columns:
 
@@ -201,15 +205,17 @@ elif page == "🛡 Defenders":
             title="Top Tacklers",
         )
 
-        fig.update_layout(template="plotly_dark")
-
         st.plotly_chart(fig, use_container_width=True)
-        st.dataframe(top)
+        st.dataframe(top[["player_name", "team", "tackles"]])
+
+    else:
+        st.warning("Tackles column not found.")
+
 
 # =========================
 # GOALKEEPERS
 # =========================
-elif page == "🧤 Goalkeepers":
+elif page == "Goalkeepers":
 
     if "saves" in goalkeeping.columns:
 
@@ -223,19 +229,23 @@ elif page == "🧤 Goalkeepers":
             title="Top Goalkeepers",
         )
 
-        fig.update_layout(template="plotly_dark")
-
         st.plotly_chart(fig, use_container_width=True)
-        st.dataframe(top)
+        st.dataframe(top[["player_name", "team", "saves"]])
+
+    else:
+        st.warning("Saves column not found.")
+
 
 # =========================
 # DISCIPLINE
 # =========================
-elif page == "🟨 Discipline":
+elif page == "Discipline":
 
     if "yellow_cards" in disciplinary.columns and "red_cards" in disciplinary.columns:
 
-        disciplinary["total_cards"] = disciplinary["yellow_cards"] + disciplinary["red_cards"]
+        disciplinary["total_cards"] = (
+            disciplinary["yellow_cards"] + disciplinary["red_cards"]
+        )
 
         top = disciplinary.sort_values("total_cards", ascending=False).head(10)
 
@@ -247,7 +257,8 @@ elif page == "🟨 Discipline":
             title="Most Booked Players",
         )
 
-        fig.update_layout(template="plotly_dark")
-
         st.plotly_chart(fig, use_container_width=True)
-        st.dataframe(top)
+        st.dataframe(top[["player_name", "team", "total_cards"]])
+
+    else:
+        st.warning("Card columns not found.")
