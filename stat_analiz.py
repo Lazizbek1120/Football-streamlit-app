@@ -42,19 +42,21 @@ def merge_players(df, players):
 
 
 # =========================
-# TEAM MERGE (AUTO NAME FIX)
+# TEAM MERGE (HARD FIX)
 # =========================
 def merge_teams(df, teams):
-    if "team" in df.columns and "team" in teams.columns:
-        df = df.merge(teams, on="team", how="left")
+    if "id_team" in df.columns and "id_team" in teams.columns:
+        df = df.merge(teams, on="id_team", how="left")
 
-        # Team nomi bo‘lishi mumkin bo‘lgan ustunlar
-        possible_cols = ["team", "team_name", "name", "club", "club_name"]
-
-        for col in possible_cols:
-            if col in df.columns:
-                df["team_display"] = df[col]
+        # id_team dan boshqa birinchi string ustunni team nomi deb olamiz
+        team_name_col = None
+        for col in teams.columns:
+            if col != "id_team" and teams[col].dtype == "object":
+                team_name_col = col
                 break
+
+        if team_name_col:
+            df["team_display"] = df[team_name_col]
 
     return df
 
@@ -79,7 +81,7 @@ def load_data():
     goals = convert_numeric(goals)
     disciplinary = convert_numeric(disciplinary)
     players = convert_numeric(players)
-    teams = convert_numeric(teams)
+    # teams ni numeric qilmaymiz ❗
 
     # PLAYER MERGE
     attacking = merge_players(attacking, players)
@@ -254,4 +256,3 @@ elif page == "Discipline":
 
     else:
         st.warning("Card columns not found.")
-
