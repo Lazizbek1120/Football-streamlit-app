@@ -42,8 +42,8 @@ def merge_players(df, players):
 
 
 def merge_teams(df, teams):
-    if "id_team" in df.columns and "id_team" in teams.columns:
-        df = df.merge(teams, on="id_team", how="left")
+    if "team" in df.columns and "team" in teams.columns:
+        df = df.merge(teams, on="team", how="left")
     return df
 
 
@@ -279,3 +279,4 @@ elif page == "Team Comparison":
 
     else:
         st.warning("team column not found.")
+
