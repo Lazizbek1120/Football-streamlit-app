@@ -3,12 +3,12 @@ import pandas as pd
 import plotly.express as px
 
 st.set_page_config(page_title="Football Stats Analyzer", layout="wide")
-st.title(" Football Stats Analyzer Dashboard")
+st.title(" Football Stats Analyzer")
 
 
-# =========================
-# COLUMN CLEANER
-# =========================
+# ======================
+# CLEAN COLUMNS
+# ======================
 def clean_columns(df):
     df.columns = (
         df.columns
@@ -23,68 +23,51 @@ def clean_columns(df):
     return df
 
 
-# =========================
-# NUMERIC AUTO CONVERTER
-# =========================
+# ======================
+# SAFE NUMERIC CONVERT
+# ======================
 def convert_numeric(df):
     for col in df.columns:
         df[col] = pd.to_numeric(df[col], errors="ignore")
     return df
 
 
-# =========================
-# AUTO TEAM COLUMN DETECTOR
-# =========================
-def get_team_column(df):
-    possible_team_cols = [
-        "team",
-        "team_name",
-        "club",
-        "club_name",
-        "squad"
-    ]
-    for col in possible_team_cols:
+# ======================
+# FIND TEAM COLUMN
+# ======================
+def find_team_column(df):
+    for col in ["team", "team_name", "club", "club_name", "squad"]:
         if col in df.columns:
             return col
     return None
 
 
-# =========================
-# SAFE PLAYER MERGE
-# =========================
-def merge_players(df, players):
-    if "id_player" in df.columns and "id_player" in players.columns:
-        df = df.merge(players, on="id_player", how="left")
-    return df
-
-
-# =========================
+# ======================
 # LOAD DATA
-# =========================
+# ======================
 @st.cache_data
 def load_data():
 
-    attacking = clean_columns(pd.read_csv("attacking_data.csv"))
-    defending = clean_columns(pd.read_csv("defending_data.csv"))
-    goalkeeping = clean_columns(pd.read_csv("goalkeeping_data.csv"))
-    goals = clean_columns(pd.read_csv("goals_data.csv"))
-    disciplinary = clean_columns(pd.read_csv("disciplinary_data.csv"))
-    players = clean_columns(pd.read_csv("players_data.csv"))
-    teams = clean_columns(pd.read_csv("teams_data.csv"))
+    attacking = convert_numeric(clean_columns(pd.read_csv("attacking_data.csv")))
+    defending = convert_numeric(clean_columns(pd.read_csv("defending_data.csv")))
+    goalkeeping = convert_numeric(clean_columns(pd.read_csv("goalkeeping_data.csv")))
+    goals = convert_numeric(clean_columns(pd.read_csv("goals_data.csv")))
+    disciplinary = convert_numeric(clean_columns(pd.read_csv("disciplinary_data.csv")))
+    players = convert_numeric(clean_columns(pd.read_csv("players_data.csv")))
+    teams = convert_numeric(clean_columns(pd.read_csv("teams_data.csv")))
 
-    attacking = convert_numeric(attacking)
-    defending = convert_numeric(defending)
-    goalkeeping = convert_numeric(goalkeeping)
-    goals = convert_numeric(goals)
-    disciplinary = convert_numeric(disciplinary)
-    teams = convert_numeric(teams)
-
-    # Merge players
-    attacking = merge_players(attacking, players)
-    defending = merge_players(defending, players)
-    goalkeeping = merge_players(goalkeeping, players)
-    goals = merge_players(goals, players)
-    disciplinary = merge_players(disciplinary, players)
+    # Merge players if possible
+    if "id_player" in players.columns:
+        if "id_player" in attacking.columns:
+            attacking = attacking.merge(players, on="id_player", how="left")
+        if "id_player" in defending.columns:
+            defending = defending.merge(players, on="id_player", how="left")
+        if "id_player" in goalkeeping.columns:
+            goalkeeping = goalkeeping.merge(players, on="id_player", how="left")
+        if "id_player" in goals.columns:
+            goals = goals.merge(players, on="id_player", how="left")
+        if "id_player" in disciplinary.columns:
+            disciplinary = disciplinary.merge(players, on="id_player", how="left")
 
     return attacking, defending, goalkeeping, goals, disciplinary, players, teams
 
@@ -92,10 +75,9 @@ def load_data():
 attacking, defending, goalkeeping, goals, disciplinary, players, teams = load_data()
 
 
-# =========================
+# ======================
 # SIDEBAR
-# =========================
-st.sidebar.title("Navigation")
+# ======================
 page = st.sidebar.selectbox(
     "Select Section",
     [
@@ -110,130 +92,95 @@ page = st.sidebar.selectbox(
 )
 
 
-# =========================
-# HOME
-# =========================
-if page == "Home":
+# ======================
+# GENERIC PLAYER PAGE
+# ======================
+def show_player_stat(df, stat_col, title):
 
-    col1, col2, col3 = st.columns(3)
+    if stat_col not in df.columns:
+        st.warning(f"{stat_col} column not found.")
+        return
+
+    df = df.sort_values(stat_col, ascending=False).head(10)
+
+    player_col = "player_name" if "player_name" in df.columns else df.columns[0]
+    team_col = find_team_column(df)
+
+    fig = px.bar(df, x=player_col, y=stat_col, title=title)
+    st.plotly_chart(fig, use_container_width=True)
+
+    show_cols = [player_col, stat_col]
+    if team_col:
+        show_cols.append(team_col)
+
+    st.dataframe(df[show_cols])
+
+
+# ======================
+# PAGES
+# ======================
+if page == "Home":
 
     total_goals = goals["goals"].sum() if "goals" in goals.columns else 0
 
+    col1, col2, col3 = st.columns(3)
     col1.metric("Total Teams", len(teams))
     col2.metric("Total Players", len(players))
     col3.metric("Total Goals", int(total_goals))
 
 
-# =========================
-# GENERIC PLAYER PAGE
-# =========================
-def player_page(df, stat_column, title):
-
-    if stat_column in df.columns:
-
-        top = df.sort_values(stat_column, ascending=False).head(10)
-
-        team_col = get_team_column(top)
-
-        x_col = "player_name" if "player_name" in top.columns else top.columns[0]
-
-        fig = px.bar(
-            top,
-            x=x_col,
-            y=stat_column,
-            title=title,
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
-
-        show_cols = [x_col, stat_column]
-        if team_col:
-            show_cols.append(team_col)
-
-        st.dataframe(top[show_cols])
-
-    else:
-        st.warning(f"{stat_column} column not found.")
-
-
-# =========================
-# TOP SCORERS
-# =========================
 elif page == "Top Scorers":
-    player_page(goals, "goals", "Top 10 Goal Scorers")
+    show_player_stat(goals, "goals", "Top 10 Goal Scorers")
 
 
-# =========================
-# PLAYMAKERS
-# =========================
 elif page == "Playmakers":
-    player_page(attacking, "assists", "Top 10 Assist Providers")
+    show_player_stat(attacking, "assists", "Top 10 Assist Providers")
 
 
-# =========================
-# DEFENDERS
-# =========================
 elif page == "Defenders":
-    player_page(defending, "tackles", "Top 10 Tacklers")
+    show_player_stat(defending, "tackles", "Top 10 Tacklers")
 
 
-# =========================
-# GOALKEEPERS
-# =========================
 elif page == "Goalkeepers":
-    player_page(goalkeeping, "saves", "Top 10 Goalkeepers")
+    show_player_stat(goalkeeping, "saves", "Top 10 Goalkeepers")
 
 
-# =========================
-# DISCIPLINE
-# =========================
 elif page == "Discipline":
 
     if "yellow_cards" in disciplinary.columns and "red_cards" in disciplinary.columns:
-
         disciplinary["total_cards"] = (
             disciplinary["yellow_cards"] + disciplinary["red_cards"]
         )
-
-        player_page(disciplinary, "total_cards", "Most Booked Players")
-
+        show_player_stat(disciplinary, "total_cards", "Most Booked Players")
     else:
         st.warning("Card columns not found.")
 
 
-# =========================
-# TEAM COMPARISON
-# =========================
 elif page == "Team Comparison":
 
-    team_col = get_team_column(teams)
+    team_col = find_team_column(teams)
 
-    if team_col:
-
+    if not team_col:
+        st.warning("Team column not found in teams dataset.")
+    else:
         team_list = teams[team_col].unique()
 
         team1 = st.selectbox("Select Team 1", team_list)
         team2 = st.selectbox("Select Team 2", team_list)
 
-        team1_data = teams[teams[team_col] == team1]
-        team2_data = teams[teams[team_col] == team2]
+        df_compare = teams[teams[team_col].isin([team1, team2])]
 
-        comparison = pd.concat([team1_data, team2_data])
+        numeric_cols = df_compare.select_dtypes(include="number").columns
 
-        numeric_cols = comparison.select_dtypes(include="number").columns
-
-        if len(numeric_cols) > 0:
+        if len(numeric_cols) == 0:
+            st.warning("No numeric stats available.")
+        else:
             fig = px.bar(
-                comparison,
+                df_compare,
                 x=team_col,
                 y=numeric_cols,
                 barmode="group",
                 title="Team Comparison",
             )
             st.plotly_chart(fig, use_container_width=True)
-            st.dataframe(comparison)
-        else:
-            st.warning("No numeric columns available.")
-
-    else:
-        st.warning("Team column not found in teams dataset.")
+            st.dataframe(df_compare)
