@@ -11,13 +11,13 @@ st.title(" Football Stats Analyzer")
 # =========================
 @st.cache_data
 def load_data():
-    attacking = pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\attacking_data.csv")
-    defending = pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\defending_data.csv")
-    goalkeeping = pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\goalkeeping_data.csv")
-    goals = pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\goals_data.csv")
-    disciplinary = pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\disciplinary_data.csv")
-    players = pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\players_data.csv")
-    teams = pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\teams_data.csv")
+    attacking = pd.read_csv("attacking_data.csv")
+    defending = pd.read_csv("defending_data.csv")
+    goalkeeping = pd.read_csv("goalkeeping_data.csv")
+    goals = pd.read_csv("goals_data.csv")
+    disciplinary = pd.read_csv("disciplinary_data.csv")
+    players = pd.read_csv("players_data.csv")
+    teams = pd.read_csv("teams_data.csv")
 
     # Normalize column names
     attacking.columns = attacking.columns.str.lower()
@@ -220,4 +220,5 @@ elif page == "Team Comparison":
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
+
         st.warning("No numeric columns available for comparison.")
