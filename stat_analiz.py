@@ -2,13 +2,13 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-st.set_page_config(page_title="Football Stats Analyzer", layout="wide")
-st.title(" Football Stats Analyzer")
+st.set_page_config(page_title="Football Analytics", layout="wide")
+st.title(" Football Analytics Dashboard")
 
 
-# ======================
-# CLEAN COLUMNS
-# ======================
+# =========================
+# COLUMN CLEANER
+# =========================
 def clean_columns(df):
     df.columns = (
         df.columns
@@ -23,28 +23,28 @@ def clean_columns(df):
     return df
 
 
-# ======================
-# SAFE NUMERIC CONVERT
-# ======================
+# =========================
+# SAFE NUMERIC CONVERSION
+# =========================
 def convert_numeric(df):
     for col in df.columns:
         df[col] = pd.to_numeric(df[col], errors="ignore")
     return df
 
 
-# ======================
-# FIND TEAM COLUMN
-# ======================
+# =========================
+# FIND TEAM NAME COLUMN
+# =========================
 def find_team_column(df):
-    for col in ["team", "team_name", "club", "club_name", "squad"]:
+    for col in ["team_name", "team", "club", "club_name", "squad"]:
         if col in df.columns:
             return col
     return None
 
 
-# ======================
+# =========================
 # LOAD DATA
-# ======================
+# =========================
 @st.cache_data
 def load_data():
 
@@ -56,18 +56,38 @@ def load_data():
     players = convert_numeric(clean_columns(pd.read_csv("players_data.csv")))
     teams = convert_numeric(clean_columns(pd.read_csv("teams_data.csv")))
 
-    # Merge players if possible
+    # =====================
+    # PLAYER MERGE
+    # =====================
     if "id_player" in players.columns:
-        if "id_player" in attacking.columns:
-            attacking = attacking.merge(players, on="id_player", how="left")
-        if "id_player" in defending.columns:
-            defending = defending.merge(players, on="id_player", how="left")
-        if "id_player" in goalkeeping.columns:
-            goalkeeping = goalkeeping.merge(players, on="id_player", how="left")
-        if "id_player" in goals.columns:
-            goals = goals.merge(players, on="id_player", how="left")
-        if "id_player" in disciplinary.columns:
-            disciplinary = disciplinary.merge(players, on="id_player", how="left")
+        for df_name in ["attacking", "defending", "goalkeeping", "goals", "disciplinary"]:
+            df = locals()[df_name]
+            if "id_player" in df.columns:
+                locals()[df_name] = df.merge(players, on="id_player", how="left")
+
+        attacking = attacking.merge(players, on="id_player", how="left") if "id_player" in attacking.columns else attacking
+        defending = defending.merge(players, on="id_player", how="left") if "id_player" in defending.columns else defending
+        goalkeeping = goalkeeping.merge(players, on="id_player", how="left") if "id_player" in goalkeeping.columns else goalkeeping
+        goals = goals.merge(players, on="id_player", how="left") if "id_player" in goals.columns else goals
+        disciplinary = disciplinary.merge(players, on="id_player", how="left") if "id_player" in disciplinary.columns else disciplinary
+
+    # =====================
+    # TEAM MERGE
+    # =====================
+    if "id_team" in teams.columns:
+
+        if "id_team" in players.columns:
+            players = players.merge(teams, on="id_team", how="left")
+
+        for df in [attacking, defending, goalkeeping, goals, disciplinary]:
+            if "id_team" in df.columns:
+                df = df.merge(teams, on="id_team", how="left")
+
+        attacking = attacking.merge(teams, on="id_team", how="left") if "id_team" in attacking.columns else attacking
+        defending = defending.merge(teams, on="id_team", how="left") if "id_team" in defending.columns else defending
+        goalkeeping = goalkeeping.merge(teams, on="id_team", how="left") if "id_team" in goalkeeping.columns else goalkeeping
+        goals = goals.merge(teams, on="id_team", how="left") if "id_team" in goals.columns else goals
+        disciplinary = disciplinary.merge(teams, on="id_team", how="left") if "id_team" in disciplinary.columns else disciplinary
 
     return attacking, defending, goalkeeping, goals, disciplinary, players, teams
 
@@ -75,9 +95,9 @@ def load_data():
 attacking, defending, goalkeeping, goals, disciplinary, players, teams = load_data()
 
 
-# ======================
+# =========================
 # SIDEBAR
-# ======================
+# =========================
 page = st.sidebar.selectbox(
     "Select Section",
     [
@@ -92,9 +112,9 @@ page = st.sidebar.selectbox(
 )
 
 
-# ======================
+# =========================
 # GENERIC PLAYER PAGE
-# ======================
+# =========================
 def show_player_stat(df, stat_col, title):
 
     if stat_col not in df.columns:
@@ -116,9 +136,9 @@ def show_player_stat(df, stat_col, title):
     st.dataframe(df[show_cols])
 
 
-# ======================
+# =========================
 # PAGES
-# ======================
+# =========================
 if page == "Home":
 
     total_goals = goals["goals"].sum() if "goals" in goals.columns else 0
@@ -161,7 +181,7 @@ elif page == "Team Comparison":
     team_col = find_team_column(teams)
 
     if not team_col:
-        st.warning("Team column not found in teams dataset.")
+        st.warning("Team name column not found.")
     else:
         team_list = teams[team_col].unique()
 
@@ -172,9 +192,7 @@ elif page == "Team Comparison":
 
         numeric_cols = df_compare.select_dtypes(include="number").columns
 
-        if len(numeric_cols) == 0:
-            st.warning("No numeric stats available.")
-        else:
+        if len(numeric_cols) > 0:
             fig = px.bar(
                 df_compare,
                 x=team_col,
@@ -184,3 +202,5 @@ elif page == "Team Comparison":
             )
             st.plotly_chart(fig, use_container_width=True)
             st.dataframe(df_compare)
+        else:
+            st.warning("No numeric stats available.")
