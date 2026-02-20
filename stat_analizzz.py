@@ -53,6 +53,17 @@ def load_data():
     disciplinary = convert_numeric(disciplinary)
     teams = convert_numeric(teams)
 
+
+    # def merge_teams(df, teams):
+    if "id_team" in df.columns and "id_team" in teams.columns:
+        df = df.merge(teams, on="id_team", how="left")
+    return df
+
+        attacking = merge_teams(attacking, teams)
+        defending = merge_teams(defending, teams)
+        goalkeeping = merge_teams(goalkeeping, teams)
+        goals = merge_teams(goals, teams)
+        disciplinary = merge_teams(disciplinary, teams)
     # Merge if id_player mavjud bo‘lsa
     if "id_player" in players.columns:
         for df in [attacking, defending, goalkeeping, goals, disciplinary]:
@@ -252,4 +263,5 @@ elif page == "Team Comparison":
     else:
 
         st.warning("team column not found.")
+
 
