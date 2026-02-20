@@ -45,8 +45,8 @@ def merge_players(df, players):
 # TEAM MERGE (AUTO NAME FIX)
 # =========================
 def merge_teams(df, teams):
-    if "id_team" in df.columns and "id_team" in teams.columns:
-        df = df.merge(teams, on="id_team", how="left")
+    if "team" in df.columns and "team" in teams.columns:
+        df = df.merge(teams, on="team", how="left")
 
         # Team nomi bo‘lishi mumkin bo‘lgan ustunlar
         possible_cols = ["team", "team_name", "name", "club", "club_name"]
@@ -254,3 +254,4 @@ elif page == "Discipline":
 
     else:
         st.warning("Card columns not found.")
+
