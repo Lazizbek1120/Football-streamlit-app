@@ -7,7 +7,7 @@ st.title("Football Stats Analyzer Dashboard")
 
 
 # =========================
-# UNIVERSAL COLUMN CLEANER
+# COLUMN CLEANER
 # =========================
 def clean_columns(df):
     df.columns = (
@@ -24,7 +24,7 @@ def clean_columns(df):
 
 
 # =========================
-# AUTO NUMERIC CONVERTER
+# NUMERIC CONVERTER
 # =========================
 def convert_numeric(df):
     for col in df.columns:
@@ -33,7 +33,7 @@ def convert_numeric(df):
 
 
 # =========================
-# MERGE FUNCTIONS
+# PLAYER MERGE
 # =========================
 def merge_players(df, players):
     if "id_player" in df.columns and "id_player" in players.columns:
@@ -41,9 +41,21 @@ def merge_players(df, players):
     return df
 
 
+# =========================
+# TEAM MERGE (AUTO NAME FIX)
+# =========================
 def merge_teams(df, teams):
-    if "team" in df.columns and "team" in teams.columns:
-        df = df.merge(teams, on="team", how="left")
+    if "id_team" in df.columns and "id_team" in teams.columns:
+        df = df.merge(teams, on="id_team", how="left")
+
+        # Team nomi bo‘lishi mumkin bo‘lgan ustunlar
+        possible_cols = ["team", "team_name", "name", "club", "club_name"]
+
+        for col in possible_cols:
+            if col in df.columns:
+                df["team_display"] = df[col]
+                break
+
     return df
 
 
@@ -102,7 +114,6 @@ page = st.sidebar.selectbox(
         "Defenders",
         "Goalkeepers",
         "Discipline",
-        "Team Comparison",
     ],
 )
 
@@ -134,7 +145,7 @@ elif page == "Top Scorers":
             top,
             x="player_name" if "player_name" in top.columns else top.columns[0],
             y="goals",
-            color="team" if "team" in top.columns else None,
+            color="team_display" if "team_display" in top.columns else None,
             title="Top 10 Goal Scorers",
         )
 
@@ -158,7 +169,7 @@ elif page == "Playmakers":
             top,
             x="player_name" if "player_name" in top.columns else top.columns[0],
             y="assists",
-            color="team" if "team" in top.columns else None,
+            color="team_display" if "team_display" in top.columns else None,
             title="Top Assist Providers",
         )
 
@@ -182,7 +193,7 @@ elif page == "Defenders":
             top,
             x="player_name" if "player_name" in top.columns else top.columns[0],
             y="tackles",
-            color="team" if "team" in top.columns else None,
+            color="team_display" if "team_display" in top.columns else None,
             title="Top Tacklers",
         )
 
@@ -206,7 +217,7 @@ elif page == "Goalkeepers":
             top,
             x="player_name" if "player_name" in top.columns else top.columns[0],
             y="saves",
-            color="team" if "team" in top.columns else None,
+            color="team_display" if "team_display" in top.columns else None,
             title="Top Goalkeepers",
         )
 
@@ -234,7 +245,7 @@ elif page == "Discipline":
             top,
             x="player_name" if "player_name" in top.columns else top.columns[0],
             y="total_cards",
-            color="team" if "team" in top.columns else None,
+            color="team_display" if "team_display" in top.columns else None,
             title="Most Booked Players",
         )
 
@@ -243,40 +254,3 @@ elif page == "Discipline":
 
     else:
         st.warning("Card columns not found.")
-
-
-# =========================
-# TEAM COMPARISON
-# =========================
-elif page == "Team Comparison":
-
-    if "team" in teams.columns:
-
-        team_list = teams["team"].unique()
-
-        team1 = st.selectbox("Select Team 1", team_list)
-        team2 = st.selectbox("Select Team 2", team_list)
-
-        comparison = teams[teams["team"].isin([team1, team2])]
-
-        numeric_cols = comparison.select_dtypes(include="number").columns
-
-        if len(numeric_cols) > 0:
-
-            fig = px.bar(
-                comparison,
-                x="team",
-                y=numeric_cols,
-                barmode="group",
-                title="Team Comparison",
-            )
-
-            st.plotly_chart(fig, use_container_width=True)
-            st.dataframe(comparison)
-
-        else:
-            st.warning("No numeric columns available.")
-
-    else:
-        st.warning("team column not found.")
-
