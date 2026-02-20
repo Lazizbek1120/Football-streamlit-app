@@ -53,8 +53,8 @@ def merge_teams(df, teams):
         df = df.merge(teams, on="id_team", how="left")
 
         # team nom ustunini aniqlaymiz
-        if "team_name" in df.columns:
-            df["team"] = df["team_name"]
+        if "team" in df.columns:
+            df["team"] = df["team"]
         elif "name" in df.columns:
             df["team"] = df["name"]
         else:
@@ -262,3 +262,4 @@ elif page == "Discipline":
 
     else:
         st.warning("Card columns not found.")
+
