@@ -84,7 +84,7 @@ page = st.sidebar.selectbox(
         "Defenders",
         "Goalkeepers",
         "Discipline",
-        "Team Comparison",
+        "Team",
     ],
 )
 
@@ -222,15 +222,15 @@ elif page == "Discipline":
 # =========================
 elif page == "Team Comparison":
 
-    if "team_name" in teams.columns:
+    if "team" in teams.columns:
 
-        team_list = teams["team_name"].unique()
+        team_list = teams["team"].unique()
 
         team1 = st.selectbox("Select Team 1", team_list)
         team2 = st.selectbox("Select Team 2", team_list)
 
-        team1_data = teams[teams["team_name"] == team1]
-        team2_data = teams[teams["team_name"] == team2]
+        team1_data = teams[teams["team"] == team1]
+        team2_data = teams[teams["team"] == team2]
 
         comparison = pd.concat([team1_data, team2_data])
 
@@ -239,7 +239,7 @@ elif page == "Team Comparison":
         if len(numeric_cols) > 0:
             fig = px.bar(
                 comparison,
-                x="team_name",
+                x="team",
                 y=numeric_cols,
                 barmode="group",
                 title="Team Comparison",
@@ -251,4 +251,5 @@ elif page == "Team Comparison":
 
     else:
 
-        st.warning("team_name column not found.")
+        st.warning("team column not found.")
+
