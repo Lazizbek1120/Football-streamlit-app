@@ -54,7 +54,7 @@ def load_data():
     teams = convert_numeric(teams)
 
 
-    # def merge_teams(df, teams):
+    def merge_teams(df, teams):
     if "id_team" in df.columns and "id_team" in teams.columns:
         df = df.merge(teams, on="id_team", how="left")
     
@@ -262,6 +262,7 @@ elif page == "Team Comparison":
     else:
 
         st.warning("team column not found.")
+
 
 
 
