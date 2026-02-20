@@ -38,13 +38,13 @@ def convert_numeric(df):
 @st.cache_data
 def load_data():
 
-    attacking = clean_columns(pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\attacking_data.csv"))
-    defending = clean_columns(pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\defending_data.csv"))
-    goalkeeping = clean_columns(pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\goalkeeping_data.csv"))
-    goals = clean_columns(pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\goals_data.csv"))
-    disciplinary = clean_columns(pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\disciplinary_data.csv"))
-    players = clean_columns(pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\players_data.csv"))
-    teams = clean_columns(pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\Playing data\teams_data.csv"))
+    attacking = clean_columns(pd.read_csv("attacking_data.csv"))
+    defending = clean_columns(pd.read_csv("defending_data.csv"))
+    goalkeeping = clean_columns(pd.read_csv("goalkeeping_data.csv"))
+    goals = clean_columns(pd.read_csv("goals_data.csv"))
+    disciplinary = clean_columns(pd.read_csv("disciplinary_data.csv"))
+    players = clean_columns(pd.read_csv("players_data.csv"))
+    teams = clean_columns(pd.read_csv("teams_data.csv"))
 
     attacking = convert_numeric(attacking)
     defending = convert_numeric(defending)
@@ -250,4 +250,5 @@ elif page == "Team Comparison":
             st.warning("No numeric columns available.")
 
     else:
+
         st.warning("team_name column not found.")
