@@ -9,7 +9,7 @@ st.title("UEFA Champions League 2025-26 Data Analysis Dashboard")
 
 # LOAD DATA
 
-df = pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\YCHL\ucl_2025_26_matches_with_goals.csv")
+df = pd.read_csv("ucl_2025_26_matches_with_goals.csv")
 
 # Ensure numeric
 df["home_goals"] = pd.to_numeric(df["home_goals"], errors="coerce")
@@ -115,5 +115,6 @@ table = pd.DataFrame({
 st.dataframe(table.head(10))
 
 predicted_champion = table.index[0]
+
 
 st.success(f" Bashorat qilingan chempion: {predicted_champion}")
