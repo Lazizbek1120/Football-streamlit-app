@@ -10,7 +10,7 @@ st.title("UEFA Champions League 2025-26 Data Analysis Dashboard")
 
 # LOAD DATA
 
-df = pd.read_csv(r"C:\Users\HP\Desktop\Lazizbek\YCHL\ucl_2025_26_matches_with_goals.csv")
+df = pd.read_csv("ucl_2025_26_matches_with_goals.csv")
 
 df["home_goals"] = pd.to_numeric(df["home_goals"], errors="coerce")
 df["away_goals"] = pd.to_numeric(df["away_goals"], errors="coerce")
@@ -181,5 +181,6 @@ fig_sim = px.bar(prob_df.head(10),
                  title="Top 10 Champion Probability (%)",
                  labels={"value":"Probability %","index":"Team"})
 st.plotly_chart(fig_sim, use_container_width=True)
+
 
 st.success(f" Simulyatsiya bo‘yicha eng ehtimolli chempion: {prob_df.index[0]}")
