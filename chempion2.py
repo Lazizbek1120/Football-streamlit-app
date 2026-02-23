@@ -17,13 +17,13 @@ df["away_goals"] = pd.to_numeric(df["away_goals"], errors="coerce")
 df["total_goals"] = df["home_goals"] + df["away_goals"]
 
 
-# 1️ ENG KO‘P GOL URGAN JAMOA
+# 1️ ENG KOP GOL URGAN JAMOA
 
 home_goals = df.groupby("home_team")["home_goals"].sum()
 away_goals = df.groupby("away_team")["away_goals"].sum()
 total_scored = home_goals.add(away_goals, fill_value=0).sort_values(ascending=False)
 
-st.subheader(" Eng ko‘p gol urgan jamoalar")
+st.subheader(" Eng kop gol urgan jamoalar")
 fig1 = px.bar(total_scored.head(10),
               title="Top 10 Goal Scoring Teams",
               labels={"value":"Goals","index":"Team"})
@@ -36,7 +36,7 @@ home_conceded = df.groupby("home_team")["away_goals"].sum()
 away_conceded = df.groupby("away_team")["home_goals"].sum()
 total_conceded = home_conceded.add(away_conceded, fill_value=0).sort_values(ascending=False)
 
-st.subheader(" Eng ko‘p gol o‘tkazgan jamoalar")
+st.subheader(" Eng kop gol otkazgan jamoalar")
 fig2 = px.bar(total_conceded.head(10),
               title="Most Goals Conceded",
               labels={"value":"Goals","index":"Team"})
@@ -57,7 +57,7 @@ col2.metric("Safarda urilgan jami gollar", int(away_total))
 
 # 4️ ENG NATIJADOR O‘YINLAR
 
-st.subheader(" Eng natijador o‘yinlar")
+st.subheader(" Eng natijador oyinlar")
 top_matches = df.sort_values("total_goals", ascending=False).head(10)
 
 st.dataframe(
@@ -68,10 +68,10 @@ st.dataframe(
 
 # 5️ O‘RTACHA GOL
 
-st.subheader(" O‘rtacha gol ko‘rsatkichi")
+st.subheader(" Ortacha gol korsatkichi")
 
 avg_goals = df["total_goals"].mean()
-st.metric("Har o‘yinga o‘rtacha gol", round(avg_goals, 2))
+st.metric("Har oyinga ortacha gol", round(avg_goals, 2))
 
 fig3 = px.histogram(df, x="total_goals", nbins=12,
                     title="Goal Distribution Per Match")
@@ -174,7 +174,7 @@ for _ in range(simulations):
 
 prob_df = (pd.Series(results) / simulations * 100).sort_values(ascending=False)
 
-st.write("## Chempion bo‘lish ehtimoli (%)")
+st.write("## Chempion bolish ehtimoli (%)")
 st.dataframe(prob_df.round(2))
 
 fig_sim = px.bar(prob_df.head(10),
@@ -183,4 +183,5 @@ fig_sim = px.bar(prob_df.head(10),
 st.plotly_chart(fig_sim, use_container_width=True)
 
 
-st.success(f" Simulyatsiya bo‘yicha eng ehtimolli chempion: {prob_df.index[0]}")
+st.success(f" Simulyatsiya boyicha eng ehtimolli chempion: {prob_df.index[0]}")
+
