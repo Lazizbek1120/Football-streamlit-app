@@ -1,6 +1,10 @@
 streamlit
-pandas
+sqlalchemy
+passlib
+python-jose
+matplotlib
 numpy
 plotly
+
 
 
