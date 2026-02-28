@@ -1,7 +1,7 @@
 from passlib.context import CryptContext
 from Database import SessionLocal, User
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 
 def register_user(username, password):
     db = SessionLocal()
@@ -14,6 +14,8 @@ def register_user(username, password):
 def authenticate_user(username, password):
     db = SessionLocal()
     user = db.query(User).filter(User.username == username).first()
-    if user and pwd_context.verify(password, user.password):
-        return True
-    return False
+
+    if not user:
+        return False
+
+    return pwd_context.verify(password, user.password)
