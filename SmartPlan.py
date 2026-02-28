@@ -7,19 +7,19 @@ st.title("🏠 SmartPlan AI - Pro MVP")
 
 menu = st.sidebar.selectbox("Menu", ["Login", "Register"])
 
-if menu == "Register":
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    if st.button("Register"):
-        register_user(username, password)
-        st.success("User created!")
+# if menu == "Register":
+#     username = st.text_input("Username")
+#     password = st.text_input("Password", type="password")
+#     if st.button("Register"):
+#         register_user(username, password)
+#         st.success("User created!")
 
-if menu == "Login":
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        if authenticate_user(username, password):
-            st.success("Logged in!")
+# if menu == "Login":
+#     username = st.text_input("Username")
+#     password = st.text_input("Password", type="password")
+#     if st.button("Login"):
+#         if authenticate_user(username, password):
+#             st.success("Logged in!")
 
             width = st.number_input("Width", min_value=5)
             height = st.number_input("Height", min_value=5)
@@ -32,4 +32,5 @@ if menu == "Login":
                 fig = generate_3d(layout)
                 st.plotly_chart(fig)
         else:
+
             st.error("Wrong credentials")
