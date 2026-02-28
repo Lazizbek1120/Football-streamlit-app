@@ -1,10 +1,11 @@
 streamlit
 sqlalchemy
 passlib
-python-jose
-matplotlib
+
+
 numpy
 plotly
+
 
 
 
